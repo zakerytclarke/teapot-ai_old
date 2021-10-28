@@ -11,6 +11,7 @@ class Teapot:
   def __init__(self):
     self.knowledge_graph=[]
     self.scripts=[]
+    self.mode="qa"
     self.mappedWords={
       "who":"<person>",
       "what":"<clause>",
@@ -25,6 +26,8 @@ class Teapot:
       value = self.mappedWords[key]
       self.reverseMappedWords[value]=key
 
+  def setMode(self,mode):
+    self.mode=mode
 
   def view(self):
     self.viewKnowledge()
@@ -143,20 +146,40 @@ class Teapot:
     g1Reversed = dict(g1)
     g1Reversed["children"] = list(reversed(g1Reversed["children"]))
 
-    
-    for idx,graph in enumerate(self.knowledge_graph):
-      score = self.scoreMatch(g1,graph,currentExtracted)
-      if score>bestScore:
-        bestScore = score
-        bestIndex = self.knowledge_graph[idx]
-        bestReversed = False
-        bestExtracted = dict(currentExtracted)
-      scoreRev = self.scoreMatch(g1Reversed,graph,currentExtracted)
-      if scoreRev>bestScore:
-        bestScore = scoreRev
-        bestIndex = self.knowledge_graph[idx]
-        bestReversed = True
-        bestExtracted = dict(currentExtracted)
+    self.printTree(g1)
+    self.printTree(g1Reversed)
+
+    if(self.mode=="qa"):
+      for idx,graph in enumerate(self.knowledge_graph):
+        score = self.scoreMatch(g1,graph,currentExtracted)
+        if score>bestScore:
+          bestScore = score
+          bestIndex = self.knowledge_graph[idx]
+          bestReversed = False
+          bestExtracted = dict(currentExtracted)
+        scoreRev = self.scoreMatch(g1Reversed,graph,currentExtracted)
+        if scoreRev>bestScore:
+          bestScore = scoreRev
+          bestIndex = self.knowledge_graph[idx]
+          bestReversed = True
+          bestExtracted = dict(currentExtracted)
+    else:
+      for idx,script in enumerate(self.scripts):
+        score = self.scoreMatch(g1,script,currentExtracted)
+        if score>bestScore:
+          bestScore = score
+          bestIndex = self.scripts[idx]
+          bestReversed = False
+          bestExtracted = dict(currentExtracted)
+        scoreRev = self.scoreMatch(g1Reversed,script,currentExtracted)
+        if scoreRev>bestScore:
+          bestScore = scoreRev
+          bestIndex = self.scripts[idx]
+          bestReversed = True
+          bestExtracted = dict(currentExtracted)
+        self.printTree(script)
+        print(score)
+        print(scoreRev)
     return [bestIndex,bestExtracted]
     
   def scoreMatch(self,g1,g2,extract):
@@ -167,6 +190,10 @@ class Teapot:
 
     if(g1["modified"][0]=="<"):
       extract[g1["modified"]]=self.convertAnswer(g2,g1["modified"])
+      return 1
+
+    if(g2["modified"][0]=="<"):
+      extract[g2["modified"]]=self.convertAnswer(g1,g2["modified"])
       return 1
 
     
