@@ -10,6 +10,29 @@ nlp = spacy.load("en_core_web_sm")
 class Teapot:
   def __init__(self):
     self.knowledge_graph=[]
+    self.scripts=[]
+    self.mappedWords={
+      "who":"<person>",
+      "what":"<clause>",
+      "when":"<time>",
+      "where":"<location>",
+      "why":"<clause>",
+      "how":"<clause>"
+    }
+    self.reverseMappedWords={}
+
+    for key in self.mappedWords:
+      value = self.mappedWords[key]
+      self.reverseMappedWords[value]=key
+
+
+  def view(self):
+    self.viewKnowledge()
+    self.viewScripts()
+
+  def viewScripts(self):
+    for script in self.scripts:
+      self.printTree(script)
 
   def viewKnowledge(self):
     for knowledge in self.knowledge_graph:
@@ -18,6 +41,14 @@ class Teapot:
   def train(self,text):
     parsed_text = self.parseTree(text)
     self.knowledge_graph+=parsed_text
+
+  def loadScript(self,text):
+    for key in self.reverseMappedWords:
+      value = self.reverseMappedWords[key]
+      text = text.replace(key,value)
+    parsed_text = self.parseTree(text)
+    self.scripts+=parsed_text
+    
 
   def reply(self,text):
     parsed_text = self.parseTree(text)
@@ -71,6 +102,22 @@ class Teapot:
       return "<clause>"
     if(word=="how"):
       return "<clause>"
+    return word
+
+  def reverseWordMapping(self,word):
+    word=word.lower()
+    if(word=="<person>"):
+      return "who"
+    if(word=="<clause>"):
+      return "what"
+    if(word=="<time>"):
+      return "when"
+    if(word=="<location>"):
+      return "where"
+    if(word=="<clause>"):
+      return "why"
+    if(word=="<clause>"):
+      return "how"
     return word
     
 
