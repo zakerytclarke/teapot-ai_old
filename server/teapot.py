@@ -183,6 +183,7 @@ class Teapot:
     return [bestIndex,bestExtracted]
     
   def scoreMatch(self,g1,g2,extract):
+    
     if( g1==None or g2==None ):
         return 0
     
