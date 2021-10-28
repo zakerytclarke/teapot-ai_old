@@ -12,8 +12,12 @@ teapot.train("George Washington was the first President of the United States")
 #teapot.train("John Adams was the second President of the United States")
 teapot.train("The second president of the United States was John Adams")
 
-teapot.viewKnowledge()
+# teapot.viewKnowledge()
 
 reply=teapot.reply("Who was George Washington")
+
+print(reply)
+
+reply=teapot.reply("Who was the second president of the United States")
 
 print(reply)
