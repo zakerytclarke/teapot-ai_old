@@ -21,4 +21,4 @@ def test():
     knowledge_graph = json.dumps(teapot.knowledge_graph) 
     print(knowledge_graph)
 
-    return "I'm a little teapot!"
+    return teapot.reply(req.message)

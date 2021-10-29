@@ -13,10 +13,10 @@ teapot.load()
 
 # teapot.save()
 
-teapot.view()
+# teapot.view()
 
 
-reply=teapot.reply("Who was George Washington")
+reply=teapot.reply("Who was the second president of the United States?")
 
 print(reply)
 

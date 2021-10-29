@@ -80,6 +80,7 @@ class Teapot:
     
 
   def reply(self,text):
+    text=text.replace("?","")
     parsed_text = self.parseTree(text)
 
     answer=""
@@ -92,8 +93,9 @@ class Teapot:
         bestMatchExtracted = bestMatchArr[1]
         sentence_out=dict(sentence)
         sentence_out["children"]=reversed(sentence_out["children"])
-        print("=======================")
-        answer+=self.constructSentence(sentence_out,bestMatchExtracted)
+
+        self.printTree(sentence)
+        answer+=self.makeSentencePretty(self.constructSentence(sentence_out,bestMatchExtracted))
 
     return answer
 
@@ -145,7 +147,9 @@ class Teapot:
       return "how"
     return word
     
-
+  def makeSentencePretty(self,sentence):
+    return sentence.capitalize()+"."
+    
   def constructSentence(self,graph,entries):
     if(graph==None):
       return ""
@@ -154,7 +158,10 @@ class Teapot:
     findClause = False
     out1=""
     out2=""
-    for child in graph["children"]:
+
+    for idx,child in enumerate(graph["children"]):
+      if((graph["pos"]=="VERB" or graph["pos"]=="AUX") and idx>=1):
+        findClause=True
       if(child["pos"]=="ADP"):# clause
         findClause=True
       if(findClause):
