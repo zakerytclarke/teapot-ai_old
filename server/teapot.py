@@ -20,12 +20,17 @@ class Teapot:
       "why":"<clause>",
       "how":"<clause>"
     }
-    self.reverseMappedWords={}
 
-    for key in self.mappedWords:
-      value = self.mappedWords[key]
-      self.reverseMappedWords[value]=key
-
+    self.specialTokens={
+      "<person>":"temp_name",
+      "<time>":"temp_time",
+      "<location>":"temp_location",
+      "<phone_number>":"temp_phone",
+    }
+    self.specialTokensReversed={}
+    for token in self.specialTokens:
+      self.specialTokensReversed[self.specialTokens[token]]=token
+    
   def setMode(self,mode):
     self.mode=mode
 
@@ -46,8 +51,8 @@ class Teapot:
     self.knowledge_graph+=parsed_text
 
   def loadScript(self,text):
-    for key in self.reverseMappedWords:
-      value = self.reverseMappedWords[key]
+    for key in self.specialTokens:
+      value = self.specialTokens[key]
       text = text.replace(key,value)
     parsed_text = self.parseTree(text)
     self.scripts+=parsed_text
@@ -93,18 +98,8 @@ class Teapot:
       
   def wordMapping(self,word):
     word=word.lower()
-    if(word=="who"):
-      return "<person>"
-    if(word=="what"):
-      return "<clause>"
-    if(word=="when"):
-      return "<time>"
-    if(word=="where"):
-      return "<location>"
-    if(word=="why"):
-      return "<clause>"
-    if(word=="how"):
-      return "<clause>"
+    if(word in self.specialTokensReversed):
+      word=self.specialTokensReversed[word]
     return word
 
   def reverseWordMapping(self,word):
@@ -146,8 +141,8 @@ class Teapot:
     g1Reversed = dict(g1)
     g1Reversed["children"] = list(reversed(g1Reversed["children"]))
 
+
     self.printTree(g1)
-    self.printTree(g1Reversed)
 
     if(self.mode=="qa"):
       for idx,graph in enumerate(self.knowledge_graph):
@@ -177,9 +172,6 @@ class Teapot:
           bestIndex = self.scripts[idx]
           bestReversed = True
           bestExtracted = dict(currentExtracted)
-        self.printTree(script)
-        print(score)
-        print(scoreRev)
     return [bestIndex,bestExtracted]
     
   def scoreMatch(self,g1,g2,extract):
@@ -209,6 +201,9 @@ class Teapot:
         score+=self.scoreMatch(c1[i],c2[i],extract)
     
     return score
+
+
+
 
   def printTree(self,node):
     self.to_nltk_tree(node).pretty_print()

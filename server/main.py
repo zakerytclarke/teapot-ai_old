@@ -20,6 +20,8 @@ teapot.setMode("cs")
 
 teapot.loadScript("I am near <location>")
 
+teapot.loadScript("call me at <phone_number>")
 
+teapot.view()
 
-print(teapot.reply("I am near the library"))
+print(teapot.reply("call me at +15052349665"))
