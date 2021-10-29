@@ -2,13 +2,14 @@ import spacy
 from spacy import displacy
 from spacy.matcher import Matcher
 from nltk import Tree
-
+import json 
 
 nlp = spacy.load("en_core_web_sm")
 
 
 class Teapot:
-  def __init__(self):
+  def __init__(self,id):
+    self.id=id
     self.knowledge_graph=[]
     self.scripts=[]
     self.mode="qa"
@@ -34,6 +35,26 @@ class Teapot:
   def setMode(self,mode):
     self.mode=mode
 
+
+  def save(self):
+    file1 = open("models/"+self.id+".json","w")
+    dict_out={}
+    dict_out["mode"]=self.mode
+    dict_out["knowledge_graph"]=self.knowledge_graph
+    dict_out["scripts"]=self.scripts
+    file1.write(json.dumps(dict_out) )
+    file1.close()
+
+  def load(self):
+    file1 = open("models/"+self.id+".json","r")
+    dict_in = json.load(file1)
+    file1.close()
+    self.mode=dict_in["mode"]
+    self.knowledge_graph=dict_in["knowledge_graph"]
+    self.scripts=dict_in["scripts"]
+    
+
+  
   def view(self):
     self.viewKnowledge()
     self.viewScripts()
@@ -61,15 +82,18 @@ class Teapot:
   def reply(self,text):
     parsed_text = self.parseTree(text)
 
+    answer=""
+
     for sentence in parsed_text:
         reversedSentence=sentence
       
         bestMatchArr = self.findBestMatch(sentence)
         bestMatch = bestMatchArr[0]
         bestMatchExtracted = bestMatchArr[1]
-
-        
-    answer=bestMatchExtracted
+        sentence_out=dict(sentence)
+        sentence_out["children"]=reversed(sentence_out["children"])
+        print("=======================")
+        answer+=self.constructSentence(sentence_out,bestMatchExtracted)
 
     return answer
 
@@ -85,6 +109,7 @@ class Teapot:
     if(tree!=None):
       out={}
       out["lemma"]=tree.lemma_
+      out["pos"]=tree.pos_
       out["modified"]=self.wordMapping(tree.lemma_)
       out["word"]=tree.orth_
 
@@ -100,6 +125,8 @@ class Teapot:
     word=word.lower()
     if(word in self.specialTokensReversed):
       word=self.specialTokensReversed[word]
+    if(word in self.mappedWords):
+      word=self.mappedWords[word]
     return word
 
   def reverseWordMapping(self,word):
@@ -119,16 +146,26 @@ class Teapot:
     return word
     
 
+  def constructSentence(self,graph,entries):
+    if(graph==None):
+      return ""
+    if(graph["modified"] in entries):# Substitute answers
+      graph["word"] = entries[graph["modified"]]
+    findClause = False
+    out1=""
+    out2=""
+    for child in graph["children"]:
+      if(child["pos"]=="ADP"):# clause
+        findClause=True
+      if(findClause):
+        out2+=" "+self.constructSentence(child,entries)
+      else:
+        out1+=" "+self.constructSentence(child,entries)
+    if(graph["pos"]=="ADP"):
+      return (graph["word"]+out1+out2).strip()
+    else:
+      return (out1+" "+graph["word"]+out2).strip()
 
-  def convertAnswer(self,word,type):
-    if(type=="<person>"):
-      out=""
-      if(word["children"]!=None):
-        for c in word["children"]:
-          out+=" "+c["word"]
-      out += " " + word["word"]
-      return out.strip()
-    return word["word"]
 
 
   def findBestMatch(self,g1):
@@ -142,7 +179,6 @@ class Teapot:
     g1Reversed["children"] = list(reversed(g1Reversed["children"]))
 
 
-    self.printTree(g1)
 
     if(self.mode=="qa"):
       for idx,graph in enumerate(self.knowledge_graph):
@@ -182,11 +218,11 @@ class Teapot:
     score = 0
 
     if(g1["modified"][0]=="<"):
-      extract[g1["modified"]]=self.convertAnswer(g2,g1["modified"])
+      extract[g1["modified"]]=self.constructSentence(g2,{})
       return 1
 
     if(g2["modified"][0]=="<"):
-      extract[g2["modified"]]=self.convertAnswer(g1,g2["modified"])
+      extract[g2["modified"]]=self.constructSentence(g1,{})
       return 1
 
     
@@ -212,5 +248,5 @@ class Teapot:
     if node==None:
       return None
     else:
-      return Tree(node["modified"], [self.to_nltk_tree(child) for child in node["children"]])
+      return Tree(node["modified"]+"("+node["pos"]+")", [self.to_nltk_tree(child) for child in node["children"]])
   
