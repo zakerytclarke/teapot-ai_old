@@ -14,11 +14,20 @@ function App() {
   }, []);
 
   const handleNewUserMessage = async (newMessage) => {
+    var chat_env={
+      service_id:"wikiqa",
+      message:newMessage
+    }
+    var reply = await fetch("http://localhost:5000/getReply",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(chat_env)
+    }).then(x=>x.json());
 
-    var reply = await fetch("http://localhost:3001/api").then(x=>x.json());
-
-    addResponseMessage(reply);
+    addResponseMessage(reply.message);
   };
+
+  
 
     return (
       
@@ -29,7 +38,6 @@ function App() {
           profileAvatar={logo}
           title="Chat with Teapot AI"
           subtitle="Chatting with Teapot Customer Service"
-         
         />
       </div>
     );

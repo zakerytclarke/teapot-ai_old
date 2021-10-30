@@ -2,7 +2,11 @@ from flask import Flask, request
 from teapot import Teapot
 import json 
 
+from flask_cors import CORS
+
+
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/", methods=['GET', 'POST'])
 def hello_teapot():
@@ -15,10 +19,12 @@ def test():
     print(req)
 
     
-    teapot = Teapot(req["serviceId"])
-    teapot.setMode("cs")
-
+    teapot = Teapot(req["service_id"])
+    teapot.load()
     knowledge_graph = json.dumps(teapot.knowledge_graph) 
     print(knowledge_graph)
 
-    return teapot.reply(req.message)
+    out_dict={}
+    out_dict["message"]=teapot.reply(req["message"])
+
+    return out_dict
