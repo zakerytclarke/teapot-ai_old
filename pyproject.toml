@@ -1,0 +1,11 @@
+[tool.poetry]
+name = "teapot-ai"
+version = "0.1.0"
+description = ""
+authors = ["Zakery Clarke <zakerytclarke@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.4"
