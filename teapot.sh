@@ -1,2 +1,3 @@
 #!/bin/bash
-echo "Hello World"
+cd frontend && yarn run build
+cd ../server && flask run
